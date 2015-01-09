@@ -85,6 +85,7 @@ namespace TimeCardr.Cli
 
 		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, ILog log)
 		{
+			//TODO: This is hideous. Clean it up asshole.
 			Project currentProject = null;
 			var validProject = false;
 			while (validProject == false)
@@ -157,8 +158,12 @@ namespace TimeCardr.Cli
 
 		private static UserAction UserContinue(ILog log)
 		{
-			log.Error("UserContinue not implemented.");
-			throw new NotImplementedException();
+			Console.Write("Enter another date? (Y/N) ");
+			var entry = Console.ReadLine();
+
+			var result = (entry == "Y") ? UserAction.Continue : UserAction.Exit;
+
+			return result;
 		}
 	}
 }
