@@ -119,7 +119,7 @@ namespace TimeCardr
 			return result;
 		}
 
-		private static ICollection<Project> ReadProjectsFromFile(string filePath)
+		private static IList<Project> ReadProjectsFromFile(string filePath)
 		{
 			var result = new List<Project>();
 
@@ -139,7 +139,7 @@ namespace TimeCardr
 			return result;
 		}
 
-		private static ICollection<Task> ReadTasksFromFile(string filePath)
+		private static IList<Task> ReadTasksFromFile(string filePath)
 		{
 			var result = new List<Task>();
 

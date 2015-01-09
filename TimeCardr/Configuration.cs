@@ -7,8 +7,8 @@ namespace TimeCardr
 {
 	public class Configuration
 	{
-		public ICollection<Project> Projects { get; private set; }
-		public ICollection<Task> Tasks { get; private set; }
+		public IList<Project> Projects { get; private set; }
+		public IList<Task> Tasks { get; private set; }
 		public string TimesheetFile { get; private set; }
 
 		public Configuration()
@@ -18,7 +18,7 @@ namespace TimeCardr
 			TimesheetFile = String.Empty;
 		}
 
-		public Configuration(ICollection<Project> projects, ICollection<Task> tasks, string timesheetFile)
+		public Configuration(IList<Project> projects, IList<Task> tasks, string timesheetFile)
 		{
 			Projects = projects;
 			Tasks = tasks;

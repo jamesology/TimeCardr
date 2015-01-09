@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using log4net;
 using log4net.Config;
 
@@ -9,8 +10,8 @@ namespace TimeCardr.Cli
 {
 	class Program
 	{
-		private static IEnumerable<Project> _projects;
-		private static IEnumerable<Task> _tasks;
+		private static IList<Project> _projects;
+		private static IList<Task> _tasks;
 		static void Main(string[] args)
 		{
 			XmlConfigurator.Configure(new FileInfo("TimeCardr.Cli.log4net.config"));
@@ -40,9 +41,9 @@ namespace TimeCardr.Cli
 					var entries = Read.FromFile(config.TimesheetFile, log);
 
 					var entryDate = GetEntryDate(log);
-					var entry = entries[entryDate];
+					var entry = entries.ContainsKey(entryDate) ? entries[entryDate] : new Collection<Entry>();
 
-					entry = GetTasks(entry, log);
+					entry = GetTasks(entry, entryDate, log);
 
 					entries[entryDate] = entry;
 
@@ -61,14 +62,97 @@ namespace TimeCardr.Cli
 
 		private static DateTime GetEntryDate(ILog log)
 		{
-			log.Error("GetEntryDate not implemented.");
-			throw new NotImplementedException();
+			DateTime result = DateTime.Today;
+			var validDate = false;
+
+			while (validDate == false)
+			{
+				Console.Write("Enter Date (leave blank if today): ");
+				var entry = Console.ReadLine();
+
+				if (String.IsNullOrWhiteSpace(entry))
+				{
+					validDate = true;
+				}
+				else
+				{
+					validDate = DateTime.TryParse(entry, out result);
+				}
+			}
+
+			return result;
 		}
 
-		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, ILog log)
+		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, ILog log)
 		{
-			log.Error("GetTasks not implemented.");
-			throw new NotImplementedException();
+			Project currentProject = null;
+			var validProject = false;
+			while (validProject == false)
+			{
+				Console.WriteLine("Select a Project:");
+				for (int i = 0; i < _projects.Count(); i++)
+				{
+					Console.WriteLine("\t{0}: {1}", i, _projects[i].Name);
+				}
+				var project = Console.ReadLine();
+				int projectIndex;
+				validProject = Int32.TryParse(project, out projectIndex);
+				if(validProject) { currentProject = _projects[projectIndex];}
+			}
+
+			var totalHours = 0;
+			var validHours = false;
+			while (validHours == false)
+			{
+				Console.Write("Total Hours: ");
+				var hours = Console.ReadLine();
+				validHours = Int32.TryParse(hours, out totalHours);
+			}
+
+			var validEntry = false;
+			while (validEntry == false)
+			{
+				var entryHours = 0;
+
+				foreach (var task in _tasks)
+				{
+					var taskHours = 0;
+					var validTaskHours = false;
+					while (validTaskHours == false)
+					{
+						Console.Write("{0} hours (? for description, blank for 0): ", task.Name);
+						var taskEntry = Console.ReadLine();
+
+						if (taskEntry == "?")
+						{
+							Console.WriteLine(task.Description);
+						}
+						else if(String.IsNullOrWhiteSpace(taskEntry))
+						{
+							validTaskHours = true;
+							taskHours = 0;
+						}
+						else
+						{
+							validTaskHours = Int32.TryParse(taskEntry, out taskHours);
+
+						}
+					}
+
+					entry.Add(new Entry(entryDate, currentProject.Id, task.Id, taskHours));
+					entryHours += taskHours;
+				}
+
+				validEntry = (totalHours == entryHours);
+
+				if (validEntry == false)
+				{
+					Console.WriteLine("Sum of task hours ({0}) not equal to total hours ({1}). Please reenter.", entryHours, totalHours);
+					entry = new Collection<Entry>();
+				}
+			}
+
+			return entry;
 		}
 
 		private static UserAction UserContinue(ILog log)
