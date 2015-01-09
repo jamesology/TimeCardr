@@ -6,7 +6,7 @@ namespace TimeCardr
 {
 	public class Write
 	{
-		public static void ToFile(string timesheetFile, IDictionary<DateTime, IEnumerable<Entry>> entries, ILog log)
+		public static void ToFile(string timesheetFile, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
 		{
 			log.Error("Write.ToFile not implemented.");
 			throw new NotImplementedException();

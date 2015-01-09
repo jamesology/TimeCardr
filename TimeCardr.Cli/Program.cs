@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using log4net;
 using log4net.Config;
@@ -20,10 +21,21 @@ namespace TimeCardr.Cli
 			{
 				while (action != UserAction.Exit)
 				{
-					var config = Configuration.Initialize(args, log);
+					var config = Configurator.Initialize(args, log);
 
 					_projects = config.Projects;
 					_tasks = config.Tasks;
+
+					foreach (var project in _projects)
+					{
+						log.DebugFormat("{0} - {1}", project.Id, project.Name);
+					}
+
+					foreach (var task in _tasks)
+					{
+						log.DebugFormat("{0} - {1}", task.Id, task.Name);
+						log.Debug(task.Description);
+					}
 
 					var entries = Read.FromFile(config.TimesheetFile, log);
 
@@ -53,7 +65,7 @@ namespace TimeCardr.Cli
 			throw new NotImplementedException();
 		}
 
-		private static IEnumerable<Entry> GetTasks(IEnumerable<Entry> entry, ILog log)
+		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, ILog log)
 		{
 			log.Error("GetTasks not implemented.");
 			throw new NotImplementedException();
