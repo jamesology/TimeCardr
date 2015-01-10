@@ -20,37 +20,37 @@ namespace TimeCardr.Cli
 
 			try
 			{
+				var config = Configurator.Initialize(args, log);
+
+				_projects = config.Projects;
+				_tasks = config.Tasks;
+
+				foreach (var project in _projects)
+				{
+					log.DebugFormat("{0} - {1}", project.Id, project.Name);
+				}
+
+				foreach (var task in _tasks)
+				{
+					log.DebugFormat("{0} - {1}", task.Id, task.Name);
+					log.Debug(task.Description);
+				}
+
+				var entries = Read.FromFile(config.TimesheetFile, log);
+
 				while (action != UserAction.Exit)
 				{
-					var config = Configurator.Initialize(args, log);
-
-					_projects = config.Projects;
-					_tasks = config.Tasks;
-
-					foreach (var project in _projects)
-					{
-						log.DebugFormat("{0} - {1}", project.Id, project.Name);
-					}
-
-					foreach (var task in _tasks)
-					{
-						log.DebugFormat("{0} - {1}", task.Id, task.Name);
-						log.Debug(task.Description);
-					}
-
-					var entries = Read.FromFile(config.TimesheetFile, log);
-
 					var entryDate = GetEntryDate(log);
-					var entry = entries.ContainsKey(entryDate) ? entries[entryDate] : new Collection<Entry>();
+					ICollection<Entry> entry = new Collection<Entry>();
 
 					entry = GetTasks(entry, entryDate, log);
 
 					entries[entryDate] = entry;
 
 					action = UserContinue(log);
-
-					Write.ToFile(config.TimesheetFile, entries, log);
 				}
+
+				Write.ToFile(config.TimesheetFile, entries, log);
 			}
 			catch (Exception ex)
 			{
@@ -159,9 +159,9 @@ namespace TimeCardr.Cli
 		private static UserAction UserContinue(ILog log)
 		{
 			Console.Write("Enter another date? (Y/N) ");
-			var entry = Console.ReadLine();
+			var entry = Console.ReadLine().ToLowerInvariant();
 
-			var result = (entry == "Y") ? UserAction.Continue : UserAction.Exit;
+			var result = (entry == "y") ? UserAction.Continue : UserAction.Exit;
 
 			return result;
 		}

@@ -26,23 +26,22 @@ namespace TimeCardr
 					var entryData = input
 							.Split('\n')
 							.Select(line => line.Trim())
-							.Where(line => line.Length > 0)
-							.Skip(1);
+							.Where(line => line.Length > 0);
 
 					var allEntries = CreateEntries(entryData);
 
 					foreach (var entry in allEntries)
 					{
-						var entries = result[entry.Date];
-
-						if (entries == null)
+						if (result.ContainsKey(entry.Date) == false)
 						{
-							entries = new List<Entry>();
-							result[entry.Date] = entries;
+							result[entry.Date] = new List<Entry>();
 						}
+						var entries = result[entry.Date];
 
 						entries.Add(entry);
 					}
+
+					stream.Close();
 				}
 			}
 
@@ -70,7 +69,7 @@ namespace TimeCardr
 			var project = split[1];
 			var date = DateTime.Parse(split[2]);
 			var task = split[3];
-			var hours = Int32.Parse(split[3]);
+			var hours = Int32.Parse(split[4]);
 			result.Add(new Entry(date, project, task, hours));
 		}
 	}
