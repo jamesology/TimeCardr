@@ -14,7 +14,7 @@ namespace TimeCardr
 			{
 				var fileWriter = new StreamWriter(stream);
 
-				foreach (var entry in entries.SelectMany(dateEntries => dateEntries.Value).OrderBy(x => x.Date))
+				foreach (var entry in entries.SelectMany(dateEntries => dateEntries.Value).Where(entry => entry.Hours > 0).OrderBy(x => x.Date))
 				{
 					fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
 				}
