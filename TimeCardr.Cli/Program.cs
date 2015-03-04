@@ -67,7 +67,7 @@ namespace TimeCardr.Cli
 				}
 
 				//TODO: write raw data
-				//Write.ToFile(config.OutputDirectory, entries, log);
+				Write.ToFile(config.DataFile, entries, log);
 				//TODO: write monthly detail
 				//TODO: write monthly summary
 			}

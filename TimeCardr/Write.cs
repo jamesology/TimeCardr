@@ -8,9 +8,9 @@ namespace TimeCardr
 {
 	public class Write
 	{
-		public static void ToFile(string timesheetFile, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
+		public static void ToFile(string dataFile, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
 		{
-			using (var stream = new FileStream(timesheetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
+			using (var stream = new FileStream(dataFile, FileMode.Create, FileAccess.Write, FileShare.Read))
 			{
 				var fileWriter = new StreamWriter(stream);
 

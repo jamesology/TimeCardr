@@ -66,6 +66,7 @@ namespace TimeCardr
 						{
 							result[entry.Date] = new List<Entry>();
 						}
+
 						var dayEntries = result[entry.Date];
 
 						dayEntries.Add(entry);
