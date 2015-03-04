@@ -101,7 +101,7 @@ namespace TimeCardr.Cli
 			return result;
 		}
 
-		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, ILog log)
+		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, string resourceName, ILog log)
 		{
 			//TODO: This is hideous. Clean it up asshole.
 			Project currentProject = null;
@@ -158,7 +158,7 @@ namespace TimeCardr.Cli
 						}
 					}
 
-					entry.Add(new Entry(entryDate, currentProject.Id, task.Id, taskHours));
+					entry.Add(new Entry(entryDate, resourceName, currentProject.Id, task.Id, taskHours));
 					entryHours += taskHours;
 				}
 

@@ -10,10 +10,10 @@ namespace TimeCardr
 		public string Task { get; private set; }
 		public int Hours { get; private set; }
 
-		public Entry(DateTime date, string project, string task, int hours)
+		public Entry(DateTime date, string resourceName, string project, string task, int hours)
 		{
 			Date = date;
-			ResourceName = "James Gerstmann";
+			ResourceName = resourceName;
 			Project = project;
 			Task = task;
 			Hours = hours;
