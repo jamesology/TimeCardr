@@ -39,7 +39,7 @@ namespace TimeCardr.Cli
 				}
 
 				//TODO: Read data store
-				//var entries = Read.FromFile(config.OutputDirectory, log);
+				var entries = Read.FromFile(config.DataFile, config.ResourceName, log);
 
 				//TODO: Remove data older than the month before last
 				//TODO: Import old version data
