@@ -48,6 +48,34 @@ namespace TimeCardr
 			return result;
 		}
 
+		public static IDictionary<DateTime, ICollection<Entry>> FromImportFiles(IDictionary<DateTime, ICollection<Entry>> entries, string importDirectory, string resourceName, ILog log)
+		{
+			var result = entries;
+
+			var importDirectoryInfo = new DirectoryInfo(importDirectory);
+			if (importDirectoryInfo.Exists)
+			{
+				foreach (var importFileInfo in importDirectoryInfo.EnumerateFiles())
+				{
+					log.InfoFormat("Importing from {0}", importFileInfo.Name);
+					var importEntries = FromFile(importFileInfo.FullName, resourceName, log);
+
+					foreach (var entry in importEntries.Values.SelectMany(importDayEntries => importDayEntries))
+					{
+						if (result.ContainsKey(entry.Date) == false)
+						{
+							result[entry.Date] = new List<Entry>();
+						}
+						var dayEntries = result[entry.Date];
+
+						dayEntries.Add(entry);
+					}
+				}
+			}
+
+			return result;
+		} 
+
 		public static IEnumerable<Entry> CreateEntries(IEnumerable<string> entryData, string resourceName)
 		{
 			var result = new ConcurrentBag<Entry>();

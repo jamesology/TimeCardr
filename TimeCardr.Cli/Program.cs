@@ -38,11 +38,13 @@ namespace TimeCardr.Cli
 					log.Debug(task.Description);
 				}
 
-				//TODO: Read data store
 				var entries = Read.FromFile(config.DataFile, config.ResourceName, log);
 
 				//TODO: Remove data older than the month before last
+
 				//TODO: Import old version data
+				entries = Read.FromImportFiles(entries, config.ImportDirectory, config.ResourceName, log);
+
 				while (action != UserAction.Exit)
 				{
 					//TODO: Get date for entry
