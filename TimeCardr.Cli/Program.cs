@@ -10,12 +10,15 @@ namespace TimeCardr.Cli
 {
 	class Program
 	{
+		//TODO: make this private variable unused
 		private static IList<Project> _projects;
+		//TODO: make this private variable unused
 		private static IList<Task> _tasks;
+
 		static void Main(string[] args)
 		{
 			XmlConfigurator.Configure(new FileInfo("TimeCardr.Cli.log4net.config"));
-			var log = LogManager.GetLogger("main");
+			var log = LogManager.GetLogger("timecardr");
 			var action = UserAction.Continue;
 
 			try
@@ -23,40 +26,55 @@ namespace TimeCardr.Cli
 				var config = Configurator.Initialize(args, log);
 
 				_projects = config.Projects;
-				_tasks = config.Tasks;
-
 				foreach (var project in _projects)
 				{
 					log.DebugFormat("{0} - {1}", project.Id, project.Name);
 				}
 
+				_tasks = config.Tasks;
 				foreach (var task in _tasks)
 				{
 					log.DebugFormat("{0} - {1}", task.Id, task.Name);
 					log.Debug(task.Description);
 				}
 
-				var entries = Read.FromFile(config.TimesheetFile, log);
+				//TODO: Read data store
+				//var entries = Read.FromFile(config.OutputDirectory, log);
 
+				//TODO: Remove data older than the month before last
+				//TODO: Import old version data
 				while (action != UserAction.Exit)
 				{
-					var entryDate = GetEntryDate(log);
-					ICollection<Entry> entry = new Collection<Entry>();
+					//TODO: Get date for entry
+					//var entryDate = GetEntryDate(log);
+					//ICollection<Entry> entry = new Collection<Entry>();
 
-					entry = GetTasks(entry, entryDate, log);
+					//TODO: Offer default entry
+					//TODO: get day hours
+					//TODO: Iterate projects
+					//TODO: get project hours
+					//TODO: Iterate tasks
+					//TODO: get task hours
+					//entry = GetTasks(entry, entryDate, log);
+					//entries[entryDate] = entry;
 
-					entries[entryDate] = entry;
-
+					//TODO: Compare Total Task hours to project hours
+					//TODO: Compare total project hours to total day hours
+					//TODO: allow new day entry
 					action = UserContinue(log);
 				}
 
-				Write.ToFile(config.TimesheetFile, entries, log);
+				//TODO: write raw data
+				//Write.ToFile(config.OutputDirectory, entries, log);
+				//TODO: write monthly detail
+				//TODO: write monthly summary
 			}
 			catch (Exception ex)
 			{
 				log.ErrorFormat("{0}: {1}", ex.GetType(), ex.Message);
 			}
 
+			Console.Write("Press Enter to exit.");
 			Console.ReadLine();
 		}
 

@@ -14,7 +14,8 @@ namespace TimeCardr
 			SettingsFile,
 			ProjectsFile,
 			TasksFile,
-			OutputFile
+			OutputDirectory,
+			ImportDirectory
 		}
 
 		private static readonly IDictionary<string, Property> Properties = new Dictionary<string, Property>
@@ -25,8 +26,10 @@ namespace TimeCardr
 			{"projects", Property.ProjectsFile},
 			{"t", Property.TasksFile},
 			{"tasks", Property.TasksFile},
-			{"o", Property.OutputFile},
-			{"output", Property.OutputFile}
+			{"o", Property.OutputDirectory},
+			{"output", Property.OutputDirectory},
+			{"i", Property.ImportDirectory},
+			{"import", Property.ImportDirectory}
 		};
 
 		public static Configuration Initialize(IEnumerable<string> arguments, ILog log)
@@ -56,25 +59,29 @@ namespace TimeCardr
 						if (File.Exists(pair.Value))
 						{
 							var projects = ReadProjectsFromFile(pair.Value);
-							result = new Configuration(projects, result.Tasks, result.TimesheetFile);
+							result = new Configuration(projects, result.Tasks, result.OutputDirectory, result.ImportDirectory);
 						}
 						break;
 					case Property.TasksFile:
 						if (File.Exists(pair.Value))
 						{
 							var tasks = ReadTasksFromFile(pair.Value);
-							result = new Configuration(result.Projects, tasks, result.TimesheetFile);
+							result = new Configuration(result.Projects, tasks, result.OutputDirectory, result.ImportDirectory);
 						}
 						break;
-					case Property.OutputFile:
-						result = new Configuration(result.Projects, result.Tasks, pair.Value);
+					case Property.OutputDirectory:
+						result = new Configuration(result.Projects, result.Tasks, pair.Value, result.ImportDirectory);
+						break;
+					case Property.ImportDirectory:
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, pair.Value);
 						break;
 				}
 			}
 
 			log.DebugFormat("Project Count: {0}", result.Projects.Count);
 			log.DebugFormat("Task Count: {0}", result.Tasks.Count);
-			log.DebugFormat("Timesheet File: {0}", result.TimesheetFile);
+			log.DebugFormat("Import Directory: {0}", result.ImportDirectory);
+			log.DebugFormat("Output Directory: {0}", result.OutputDirectory);
 
 			return result;
 		}
