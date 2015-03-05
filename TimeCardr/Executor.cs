@@ -21,10 +21,9 @@ namespace TimeCardr
 			//TODO: Import old version data
 
 
-			//TODO: write raw data
 			Write.ToFile(config.DataFile, entries, log);
-			//TODO: write monthly detail
-			//TODO: write monthly summary
+			Write.MonthlyDetail(config.OutputDirectory, entries, log);
+			Write.MonthlySummary(config.OutputDirectory, entries, log);
 
 			return entries;
 		}
