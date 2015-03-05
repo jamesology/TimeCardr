@@ -38,13 +38,6 @@ namespace TimeCardr.Cli
 					log.Debug(task.Description);
 				}
 
-				var entries = Read.FromFile(config.DataFile, config.ResourceName, log);
-
-				//TODO: Remove data older than the month before last
-
-				//TODO: Import old version data
-				entries = Read.FromImportFiles(entries, config.ImportDirectory, config.ResourceName, log);
-
 				while (action != UserAction.Exit)
 				{
 					//TODO: Get date for entry
@@ -66,10 +59,7 @@ namespace TimeCardr.Cli
 					action = UserContinue(log);
 				}
 
-				//TODO: write raw data
-				Write.ToFile(config.DataFile, entries, log);
-				//TODO: write monthly detail
-				//TODO: write monthly summary
+				Engine.Execute(config, log);
 			}
 			catch (Exception ex)
 			{

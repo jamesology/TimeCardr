@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="Configurator.cs" />
+    <Compile Include="Engine.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

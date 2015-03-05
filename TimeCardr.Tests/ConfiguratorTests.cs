@@ -25,7 +25,7 @@ namespace TimeCardr.Tests
 
 			actual.Projects.ShouldBeEmpty();
 			actual.Tasks.ShouldBeEmpty();
-			actual.TimesheetFile.ShouldBeEmpty();
+			actual.DataFile.ShouldBeEmpty();
 		}
 	}
 }
