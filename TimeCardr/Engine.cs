@@ -1,10 +1,12 @@
+using System;
+using System.Collections.Generic;
 using log4net;
 
 namespace TimeCardr
 {
 	public class Engine
 	{
-		public static void Execute(Configuration config, ILog log)
+		public static IDictionary<DateTime, ICollection<Entry>> Execute(Configuration config, ILog log)
 		{
 			var entries = Read.FromFile(config.DataFile, config.ResourceName, log);
 
@@ -20,6 +22,8 @@ namespace TimeCardr
 			Write.ToFile(config.DataFile, entries, log);
 			//TODO: write monthly detail
 			//TODO: write monthly summary
+
+			return entries;
 		}
 	}
 }

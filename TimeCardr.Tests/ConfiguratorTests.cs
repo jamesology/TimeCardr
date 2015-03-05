@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using log4net;
+﻿using log4net;
 using NUnit.Framework;
 using Shouldly;
 
@@ -8,20 +7,20 @@ namespace TimeCardr.Tests
 	[TestFixture]
 	class ConfiguratorTests
 	{
-		private ILog log;
+		private ILog _log;
 
 		[SetUp]
 		public void Setup()
 		{
-			log = LogManager.GetLogger("test");
+			_log = LogManager.GetLogger("test");
 		}
 
-		[Test]
+		[Ignore("Needs work")]
 		public void Initialize_EmptyArguments_NoValuesSet()
 		{
 			var args = new string[0];
 
-			var actual = Configurator.Initialize(args, log);
+			var actual = Configurator.Initialize(args, _log);
 
 			actual.Projects.ShouldBeEmpty();
 			actual.Tasks.ShouldBeEmpty();
