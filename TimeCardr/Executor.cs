@@ -4,7 +4,7 @@ using log4net;
 
 namespace TimeCardr
 {
-	public class Engine
+	public class Executor
 	{
 		public static IDictionary<DateTime, ICollection<Entry>> Execute(Configuration config, ILog log)
 		{

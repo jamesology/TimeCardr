@@ -59,7 +59,7 @@ namespace TimeCardr.Cli
 					action = UserContinue(log);
 				}
 
-				Engine.Execute(config, log);
+				Executor.Execute(config, log);
 			}
 			catch (Exception ex)
 			{
