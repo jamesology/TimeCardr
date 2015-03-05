@@ -11,37 +11,33 @@ namespace TimeCardr
 {
 	public class Read
 	{
-		public static IDictionary<DateTime, ICollection<Entry>> FromFile(string dataFile, string resourceName, ILog log)
+		public static IDictionary<DateTime, ICollection<Entry>> FromFile(IDictionary<DateTime, ICollection<Entry>> entries, string dataFile, string resourceName, ILog log)
 		{
-			var result = new Dictionary<DateTime, ICollection<Entry>>();
+			var result = entries;
 
 			if (File.Exists(dataFile))
 			{
+				string input;
 				using (var stream = new FileStream(dataFile, FileMode.Open, FileAccess.Read, FileShare.Read))
 				{
 					var fileReader = new StreamReader(stream);
 
-					var input = fileReader.ReadToEnd();
-
-					var entryData = input
-							.Split('\n')
-							.Select(line => line.Trim())
-							.Where(line => line.Length > 0);
-
-					var allEntries = CreateEntries(entryData, resourceName);
-
-					foreach (var entry in allEntries)
-					{
-						if (result.ContainsKey(entry.Date) == false)
-						{
-							result[entry.Date] = new List<Entry>();
-						}
-						var entries = result[entry.Date];
-
-						entries.Add(entry);
-					}
+					input = fileReader.ReadToEnd();
 
 					stream.Close();
+				}
+
+				var entryData = input
+					.Split('\n')
+					.Select(line => line.Trim())
+					.Where(line => line.Length > 0);
+
+				var allEntries = CreateEntries(entryData, resourceName);
+
+				foreach (var entryDate in allEntries.Select(x => x.Date).Distinct())
+				{
+					var dateEntries = allEntries.Where(x => x.Date == entryDate).ToList();
+					result[entryDate] = dateEntries;
 				}
 			}
 
@@ -58,18 +54,11 @@ namespace TimeCardr
 				foreach (var importFileInfo in importDirectoryInfo.EnumerateFiles())
 				{
 					log.InfoFormat("Importing from {0}", importFileInfo.Name);
-					var importEntries = FromFile(importFileInfo.FullName, resourceName, log);
+					var importEntries = FromFile(new Dictionary<DateTime, ICollection<Entry>>(), importFileInfo.FullName, resourceName, log);
 
-					foreach (var entry in importEntries.Values.SelectMany(importDayEntries => importDayEntries))
+					foreach (var entry in importEntries)
 					{
-						if (result.ContainsKey(entry.Date) == false)
-						{
-							result[entry.Date] = new List<Entry>();
-						}
-
-						var dayEntries = result[entry.Date];
-
-						dayEntries.Add(entry);
+						result[entry.Key] = entry.Value;
 					}
 				}
 			}
@@ -77,7 +66,7 @@ namespace TimeCardr
 			return result;
 		} 
 
-		public static IEnumerable<Entry> CreateEntries(IEnumerable<string> entryData, string resourceName)
+		public static IList<Entry> CreateEntries(IEnumerable<string> entryData, string resourceName)
 		{
 			var result = new ConcurrentBag<Entry>();
 
@@ -88,7 +77,7 @@ namespace TimeCardr
 				Thread.Sleep(10);
 			}
 
-			return result;
+			return result.ToList();
 		}
 
 		private static void CreateEntry(string record, string resourceName, ConcurrentBag<Entry> result)
