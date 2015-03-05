@@ -10,12 +10,15 @@ namespace TimeCardr.Cli
 {
 	class Program
 	{
+		//TODO: make this private variable unused
 		private static IList<Project> _projects;
+		//TODO: make this private variable unused
 		private static IList<Task> _tasks;
+
 		static void Main(string[] args)
 		{
 			XmlConfigurator.Configure(new FileInfo("TimeCardr.Cli.log4net.config"));
-			var log = LogManager.GetLogger("main");
+			var log = LogManager.GetLogger("timecardr");
 			var action = UserAction.Continue;
 
 			try
@@ -23,40 +26,57 @@ namespace TimeCardr.Cli
 				var config = Configurator.Initialize(args, log);
 
 				_projects = config.Projects;
-				_tasks = config.Tasks;
-
 				foreach (var project in _projects)
 				{
 					log.DebugFormat("{0} - {1}", project.Id, project.Name);
 				}
 
+				_tasks = config.Tasks;
 				foreach (var task in _tasks)
 				{
 					log.DebugFormat("{0} - {1}", task.Id, task.Name);
 					log.Debug(task.Description);
 				}
 
-				var entries = Read.FromFile(config.TimesheetFile, log);
+				var entries = Read.FromFile(config.DataFile, config.ResourceName, log);
+
+				//TODO: Remove data older than the month before last
+
+				//TODO: Import old version data
+				entries = Read.FromImportFiles(entries, config.ImportDirectory, config.ResourceName, log);
 
 				while (action != UserAction.Exit)
 				{
-					var entryDate = GetEntryDate(log);
-					ICollection<Entry> entry = new Collection<Entry>();
+					//TODO: Get date for entry
+					//var entryDate = GetEntryDate(log);
+					//ICollection<Entry> entry = new Collection<Entry>();
 
-					entry = GetTasks(entry, entryDate, log);
+					//TODO: Offer default entry
+					//TODO: get day hours
+					//TODO: Iterate projects
+					//TODO: get project hours
+					//TODO: Iterate tasks
+					//TODO: get task hours
+					//entry = GetTasks(entry, entryDate, log);
+					//entries[entryDate] = entry;
 
-					entries[entryDate] = entry;
-
+					//TODO: Compare Total Task hours to project hours
+					//TODO: Compare total project hours to total day hours
+					//TODO: allow new day entry
 					action = UserContinue(log);
 				}
 
-				Write.ToFile(config.TimesheetFile, entries, log);
+				//TODO: write raw data
+				Write.ToFile(config.DataFile, entries, log);
+				//TODO: write monthly detail
+				//TODO: write monthly summary
 			}
 			catch (Exception ex)
 			{
 				log.ErrorFormat("{0}: {1}", ex.GetType(), ex.Message);
 			}
 
+			Console.Write("Press Enter to exit.");
 			Console.ReadLine();
 		}
 
@@ -83,7 +103,7 @@ namespace TimeCardr.Cli
 			return result;
 		}
 
-		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, ILog log)
+		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, string resourceName, ILog log)
 		{
 			//TODO: This is hideous. Clean it up asshole.
 			Project currentProject = null;
@@ -140,7 +160,7 @@ namespace TimeCardr.Cli
 						}
 					}
 
-					entry.Add(new Entry(entryDate, currentProject.Id, task.Id, taskHours));
+					entry.Add(new Entry(entryDate, resourceName, currentProject.Id, task.Id, taskHours));
 					entryHours += taskHours;
 				}
 
