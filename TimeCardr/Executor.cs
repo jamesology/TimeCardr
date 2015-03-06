@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using log4net;
 
 namespace TimeCardr
 {
 	public class Executor
 	{
-		public static IDictionary<DateTime, ICollection<Entry>> Execute(Configuration config, ILog log)
+		public static IDictionary<DateTime, ICollection<Entry>> Execute(IDictionary<DateTime, ICollection<Entry>> userEntries, Configuration config, ILog log)
 		{
 			IDictionary<DateTime, ICollection<Entry>> entries = new Dictionary<DateTime, ICollection<Entry>>();
 			
@@ -14,12 +15,12 @@ namespace TimeCardr
 
 			entries = Read.FromFile(entries, config.DataFile, config.ResourceName, log);
 
-			//TODO: Merge with user entries
+			foreach (var entry in userEntries)
+			{
+				entries[entry.Key] = entry.Value;
+			}
 
-			//TODO: Remove data older than the month before last
-
-			//TODO: Import old version data
-
+			entries = FreshenData(entries, log);
 
 			Write.ToFile(config.DataFile, entries, log);
 			Write.MonthlyDetail(config.OutputDirectory, entries, log);
@@ -27,5 +28,20 @@ namespace TimeCardr
 
 			return entries;
 		}
+
+		public static IDictionary<DateTime, ICollection<Entry>> FreshenData(IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
+		{
+			var maximumAge = (new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)).AddMonths(-2);
+
+			var staleDates = entries.Keys.Where(x => x.Date < maximumAge).ToList();
+
+			foreach (var staleDate in staleDates)
+			{
+				log.DebugFormat("Removing entries for {0:d}");
+				entries.Remove(staleDate);
+			}
+
+			return entries;
+		} 
 	}
 }

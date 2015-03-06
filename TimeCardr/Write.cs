@@ -14,7 +14,7 @@ namespace TimeCardr
 			{
 				var fileWriter = new StreamWriter(stream);
 
-				foreach (var entry in entries.SelectMany(dateEntries => dateEntries.Value).Where(entry => entry.Hours > 0).OrderBy(x => x.Date))
+				foreach (var entry in entries.SelectMany(dateEntries => dateEntries.Value).Where(entry => entry.Hours > 0).OrderBy(x => x.Date).ThenBy(x => x.Project).ThenBy(x => x.Task))
 				{
 					fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
 				}
@@ -35,24 +35,28 @@ namespace TimeCardr
 
 			foreach (var month in months)
 			{
-				var monthFileName = String.Format("{0}.{1}.Detail.txt", month.Year, month.Day);
+				var monthEntries =
+					entries.SelectMany(dateEntries => dateEntries.Value)
+						.Where(entry => entry.Date.Year == month.Year && entry.Date.Month == month.Month)
+						.OrderBy(x => x.Date)
+						.ThenBy(x => x.Project)
+						.ThenBy(x => x.Task)
+						.ToList();
+
+				var monthFileName = String.Format("{0:yyyy.MM.MMMM}.Detail.txt", month);
 				var filePath = Path.Combine(outputDirectory, monthFileName);
 				using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
 				{
-					var fileWriter = new StreamWriter(stream);
-
-					var monthEntries =
-						entries.SelectMany(dateEntries => dateEntries.Value)
-							.Where(entry => entry.Date.Year == month.Year && entry.Date.Month == month.Month)
-							.OrderBy(x => x.Date)
-							.ToList();
-
-					foreach (var entry in monthEntries)
+					using (var fileWriter = new StreamWriter(stream))
 					{
-						fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
-					}
+						foreach (var entry in monthEntries)
+						{
+							fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task,
+								entry.Hours);
+						}
 
-					fileWriter.Close();
+						fileWriter.Close();
+					}
 					stream.Close();
 				}
 			}
@@ -69,41 +73,50 @@ namespace TimeCardr
 
 			foreach (var month in months)
 			{
-				var monthFileName = String.Format("{0}.{1}.Summary.txt", month.Year, month.Day);
+				var monthEntries =
+					entries.SelectMany(dateEntries => dateEntries.Value)
+						.Where(entry => entry.Date.Year == month.Year && entry.Date.Month == month.Month)
+						.Aggregate(new Dictionary<string, Entry>(), (dictionary, entry) =>
+						{
+							var key = String.Format("{0}{1}", entry.Project, entry.Task);
+							var currentHours = 0;
+							if (dictionary.ContainsKey(key))
+							{
+								currentHours = dictionary[key].Hours;
+							}
+
+							dictionary[key] = new Entry(month, entry.ResourceName, entry.Project, entry.Task, entry.Hours + currentHours);
+
+							return dictionary;
+						})
+						.Select(x => x.Value)
+						.OrderBy(x => x.Date)
+						.ThenBy(x => x.Project)
+						.ThenBy(x => x.Task)
+						.ToList();
+
+				var monthFileName = String.Format("{0:yyyy.MM.MMMM}.Summary.txt", month);
 				var filePath = Path.Combine(outputDirectory, monthFileName);
 				using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
 				{
-					var fileWriter = new StreamWriter(stream);
-
-					var monthEntries =
-						entries.SelectMany(dateEntries => dateEntries.Value)
-							.Where(entry => entry.Date.Year == month.Year && entry.Date.Month == month.Month)
-							.Aggregate(new Dictionary<string, Entry>(), (dictionary, entry) =>
-							{
-								var key = String.Format("{0}{1}", entry.Project, entry.Task);
-								var currentHours = 0;
-								if (dictionary.ContainsKey(key))
-								{
-									currentHours = dictionary[key].Hours;
-								}
-
-								dictionary[key] = new Entry(month, entry.ResourceName, entry.Project, entry.Task, entry.Hours + currentHours);
-
-								return dictionary;
-							})
-							.Select(x => x.Value)
-							.OrderBy(x => x.Date)
-							.ToList();
-
-					foreach (var entry in monthEntries)
+					using (var fileWriter = new StreamWriter(stream))
 					{
-						fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
-					}
+						foreach (var entry in monthEntries)
+						{
+							fileWriter.WriteLine("{0},{1},{2:d},{3},{4},{5:F2}%", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours, CalculatePercentage(entry, monthEntries));
+						}
 
-					fileWriter.Close();
+						fileWriter.Close();
+					}
 					stream.Close();
 				}
 			}
+		}
+
+		private static double CalculatePercentage(Entry entry, IEnumerable<Entry> monthEntries)
+		{
+			var ratio = ((double)entry.Hours / (monthEntries.Sum(x => x.Hours)));
+			return ratio * 100.0;
 		}
 	}
 }

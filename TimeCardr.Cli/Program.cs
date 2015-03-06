@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using log4net;
@@ -38,28 +37,14 @@ namespace TimeCardr.Cli
 					log.Debug(task.Description);
 				}
 
+				IDictionary<DateTime, ICollection<Entry>> userEntries = new Dictionary<DateTime, ICollection<Entry>>();
 				while (action != UserAction.Exit)
 				{
-					//TODO: Get date for entry
-					//var entryDate = GetEntryDate(log);
-					//ICollection<Entry> entry = new Collection<Entry>();
-
-					//TODO: Offer default entry
-					//TODO: get day hours
-					//TODO: Iterate projects
-					//TODO: get project hours
-					//TODO: Iterate tasks
-					//TODO: get task hours
-					//entry = GetTasks(entry, entryDate, log);
-					//entries[entryDate] = entry;
-
-					//TODO: Compare Total Task hours to project hours
-					//TODO: Compare total project hours to total day hours
-					//TODO: allow new day entry
+					userEntries = UserInput.Retrieve(userEntries, config.ResourceName, _projects, _tasks, log);
 					action = UserContinue(log);
 				}
 
-				Executor.Execute(config, log);
+				Executor.Execute(userEntries, config, log);
 			}
 			catch (Exception ex)
 			{
@@ -68,102 +53,6 @@ namespace TimeCardr.Cli
 
 			Console.Write("Press Enter to exit.");
 			Console.ReadLine();
-		}
-
-		private static DateTime GetEntryDate(ILog log)
-		{
-			DateTime result = DateTime.Today;
-			var validDate = false;
-
-			while (validDate == false)
-			{
-				Console.Write("Enter Date (leave blank if today): ");
-				var entry = Console.ReadLine();
-
-				if (String.IsNullOrWhiteSpace(entry))
-				{
-					validDate = true;
-				}
-				else
-				{
-					validDate = DateTime.TryParse(entry, out result);
-				}
-			}
-
-			return result;
-		}
-
-		private static ICollection<Entry> GetTasks(ICollection<Entry> entry, DateTime entryDate, string resourceName, ILog log)
-		{
-			//TODO: This is hideous. Clean it up asshole.
-			Project currentProject = null;
-			var validProject = false;
-			while (validProject == false)
-			{
-				Console.WriteLine("Select a Project:");
-				for (int i = 0; i < _projects.Count(); i++)
-				{
-					Console.WriteLine("\t{0}: {1}", i, _projects[i].Name);
-				}
-				var project = Console.ReadLine();
-				int projectIndex;
-				validProject = Int32.TryParse(project, out projectIndex);
-				if(validProject) { currentProject = _projects[projectIndex];}
-			}
-
-			var totalHours = 0;
-			var validHours = false;
-			while (validHours == false)
-			{
-				Console.Write("Total Hours: ");
-				var hours = Console.ReadLine();
-				validHours = Int32.TryParse(hours, out totalHours);
-			}
-
-			var validEntry = false;
-			while (validEntry == false)
-			{
-				var entryHours = 0;
-
-				foreach (var task in _tasks)
-				{
-					var taskHours = 0;
-					var validTaskHours = false;
-					while (validTaskHours == false)
-					{
-						Console.Write("{0} hours (? for description, blank for 0): ", task.Name);
-						var taskEntry = Console.ReadLine();
-
-						if (taskEntry == "?")
-						{
-							Console.WriteLine(task.Description);
-						}
-						else if(String.IsNullOrWhiteSpace(taskEntry))
-						{
-							validTaskHours = true;
-							taskHours = 0;
-						}
-						else
-						{
-							validTaskHours = Int32.TryParse(taskEntry, out taskHours);
-
-						}
-					}
-
-					entry.Add(new Entry(entryDate, resourceName, currentProject.Id, task.Id, taskHours));
-					entryHours += taskHours;
-				}
-
-				validEntry = (totalHours == entryHours);
-
-				if (validEntry == false)
-				{
-					Console.WriteLine("Sum of task hours ({0}) not equal to total hours ({1}). Please reenter.", entryHours, totalHours);
-					entry = new Collection<Entry>();
-				}
-			}
-
-			return entry;
 		}
 
 		private static UserAction UserContinue(ILog log)
