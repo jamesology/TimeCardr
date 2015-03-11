@@ -14,6 +14,7 @@ namespace TimeCardr
 		public IList<Task> Tasks { get; private set; }
 		public string OutputDirectory { get; private set; }
 		public string ImportDirectory { get; private set; }
+		public string DefaultDateFile { get; private set; }
 
 		public string DataFile
 		{
@@ -28,12 +29,13 @@ namespace TimeCardr
 			ImportDirectory = string.Empty;
 		}
 
-		public Configuration(IList<Project> projects, IList<Task> tasks, string outputDirectory, string importDirectory)
+		public Configuration(IList<Project> projects, IList<Task> tasks, string outputDirectory, string importDirectory, string defaultDateFile)
 		{
 			Projects = projects;
 			Tasks = tasks;
 			OutputDirectory = outputDirectory;
 			ImportDirectory = importDirectory;
+			DefaultDateFile = defaultDateFile;
 		}
 	}
 }

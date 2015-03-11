@@ -8,7 +8,7 @@ namespace TimeCardr.Cli
 {
 	static class UserInput
 	{
-		public static IDictionary<DateTime, ICollection<Entry>> Retrieve(IDictionary<DateTime, ICollection<Entry>> entries, string resourceName, ICollection<Project> projects, ICollection<Task> tasks, ILog log)
+		public static IDictionary<DateTime, ICollection<Entry>> Retrieve(IDictionary<DateTime, ICollection<Entry>> entries, string resourceName, ICollection<Project> projects, ICollection<Task> tasks, string defaultDataFile, ILog log)
 		{
 			var entryDate = GetEntryDate(log);
 			ICollection<Entry> entry = new Collection<Entry>();
@@ -25,7 +25,7 @@ namespace TimeCardr.Cli
 				foreach (var project in projects.Where(x => x.Active))
 				{
 					Console.WriteLine("Project: {0}", project.Name);
-					var projectEntries = GetProject(project, entryDate, resourceName, tasks, log);
+					var projectEntries = GetProject(project, entryDate, resourceName, tasks, defaultDataFile, log);
 
 					var projectHours = 0;
 					foreach (var projectEntry in projectEntries)
@@ -58,14 +58,7 @@ namespace TimeCardr.Cli
 				Console.Write("Enter Date (leave blank if today): ");
 				var entry = Console.ReadLine();
 
-				if (String.IsNullOrWhiteSpace(entry))
-				{
-					validDate = true;
-				}
-				else
-				{
-					validDate = DateTime.TryParse(entry, out result);
-				}
+				validDate = String.IsNullOrWhiteSpace(entry) || DateTime.TryParse(entry, out result);
 			}
 
 			log.DebugFormat("Date entered: {0:d}", result);
@@ -89,32 +82,57 @@ namespace TimeCardr.Cli
 			return result;
 		}
 
-		private static ICollection<Entry> GetProject(Project project, DateTime entryDate, string resourceName, ICollection<Task> tasks, ILog log)
+		private static IEnumerable<Entry> GetProject(Project project, DateTime entryDate, string resourceName, ICollection<Task> tasks, string defaultDataFile, ILog log)
 		{
-			var projectHours = GetHours(log);
-			var isProjectValid = (projectHours == 0);
+			var projectEntries = AllowDefaultEntry(defaultDataFile, project.Id, entryDate, resourceName, log);
 
-			ICollection<Entry> projectEntries = new Collection<Entry>();
-			while (isProjectValid == false)
+			if (projectEntries.Any() == false)
 			{
-				projectEntries = new Collection<Entry>();
-				var totalTaskHours = 0;
-				foreach (var taskEntry in tasks.Select(task => GetTask(task, new Entry(entryDate, resourceName, project.Id, "", 0))))
-				{
-					projectEntries.Add(taskEntry);
-					totalTaskHours += taskEntry.Hours;
-				}
+				var projectHours = GetHours(log);
+				var isProjectValid = (projectHours == 0);
 
-				isProjectValid = (projectHours == totalTaskHours);
-
-				if (isProjectValid == false)
+				while (isProjectValid == false)
 				{
-					Console.WriteLine("Hours entered for tasks({0}) do not match project total({1}). Please reenter.", totalTaskHours, projectHours);
+					projectEntries = new Collection<Entry>();
+					var totalTaskHours = 0;
+					foreach (
+						var taskEntry in tasks.Select(task => GetTask(task, new Entry(entryDate, resourceName, project.Id, "", 0))))
+					{
+						projectEntries.Add(taskEntry);
+						totalTaskHours += taskEntry.Hours;
+					}
+
+					isProjectValid = (projectHours == totalTaskHours);
+
+					if (isProjectValid == false)
+					{
+						Console.WriteLine("Hours entered for tasks({0}) do not match project total({1}). Please reenter.", totalTaskHours,
+							projectHours);
+					}
 				}
 			}
 
 			return projectEntries;
 		}
+
+		private static ICollection<Entry> AllowDefaultEntry(string defaultDateFile, string projectId, DateTime entryDate, string resourceName, ILog log)
+		{
+			Console.Write("Use default day? ");
+			var useDefault = Console.ReadLine();
+			var defaultDay = ((useDefault != null) && (useDefault.ToLower() == "y"));
+
+			ICollection<Entry> result = new Collection<Entry>();
+			if (defaultDay)
+			{
+				var defaultEntries = Read.FromFile(new Dictionary<DateTime, ICollection<Entry>>(), defaultDateFile, resourceName, log);
+
+				result = defaultEntries[defaultEntries.Keys.First()]
+					.Select(x => new Entry(entryDate, resourceName, projectId, x.Task, x.Hours))
+					.ToList();
+			}
+
+			return result;
+		} 
 
 		private static Entry GetTask(Task task, Entry entry)
 		{

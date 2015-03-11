@@ -40,7 +40,7 @@ namespace TimeCardr.Cli
 				IDictionary<DateTime, ICollection<Entry>> userEntries = new Dictionary<DateTime, ICollection<Entry>>();
 				while (action != UserAction.Exit)
 				{
-					userEntries = UserInput.Retrieve(userEntries, config.ResourceName, _projects, _tasks, log);
+					userEntries = UserInput.Retrieve(userEntries, config.ResourceName, _projects, _tasks, config.DefaultDateFile, log);
 					action = UserContinue(log);
 				}
 

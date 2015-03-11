@@ -15,7 +15,8 @@ namespace TimeCardr
 			ProjectsFile,
 			TasksFile,
 			OutputDirectory,
-			ImportDirectory
+			ImportDirectory,
+			DefaultDateFile
 		}
 
 		private static readonly IDictionary<string, Property> Properties = new Dictionary<string, Property>
@@ -29,7 +30,9 @@ namespace TimeCardr
 			{"o", Property.OutputDirectory},
 			{"output", Property.OutputDirectory},
 			{"i", Property.ImportDirectory},
-			{"import", Property.ImportDirectory}
+			{"import", Property.ImportDirectory},
+			{"d", Property.DefaultDateFile},
+			{"default", Property.DefaultDateFile},
 		};
 
 		public static Configuration Initialize(IEnumerable<string> arguments, ILog log)
@@ -59,21 +62,24 @@ namespace TimeCardr
 						if (File.Exists(pair.Value))
 						{
 							var projects = ReadProjectsFromFile(pair.Value);
-							result = new Configuration(projects, result.Tasks, result.OutputDirectory, result.ImportDirectory);
+							result = new Configuration(projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile);
 						}
 						break;
 					case Property.TasksFile:
 						if (File.Exists(pair.Value))
 						{
 							var tasks = ReadTasksFromFile(pair.Value);
-							result = new Configuration(result.Projects, tasks, result.OutputDirectory, result.ImportDirectory);
+							result = new Configuration(result.Projects, tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile);
 						}
 						break;
 					case Property.OutputDirectory:
-						result = new Configuration(result.Projects, result.Tasks, pair.Value, result.ImportDirectory);
+						result = new Configuration(result.Projects, result.Tasks, pair.Value, result.ImportDirectory, result.DefaultDateFile);
 						break;
 					case Property.ImportDirectory:
-						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, pair.Value);
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, pair.Value, result.DefaultDateFile);
+						break;
+					case Property.DefaultDateFile:
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, pair.Value);
 						break;
 				}
 			}
