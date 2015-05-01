@@ -37,7 +37,7 @@ namespace TimeCardr
 
 			foreach (var staleDate in staleDates)
 			{
-				log.DebugFormat("Removing entries for {0:d}");
+				log.DebugFormat("Removing entries for {0:d}", staleDate);
 				entries.Remove(staleDate);
 			}
 

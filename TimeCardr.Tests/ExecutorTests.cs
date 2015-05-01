@@ -371,7 +371,7 @@ namespace TimeCardr.Tests
 				var id = GenerateRandomString();
 				var name = GenerateRandomString();
 
-				result.Add(new Project(id, name));
+				result.Add(new Project(id, name, true));
 			}
 
 			return result;
@@ -423,7 +423,7 @@ namespace TimeCardr.Tests
 				Directory.CreateDirectory(outputDirectory);
 			}
 
-			return new Configuration(projects, tasks, outputDirectory, importDirectory);
+			return new Configuration(projects, tasks, outputDirectory, importDirectory, string.Empty);
 		}
 		private static void CreateDataFile(string filePath, IEnumerable<Entry> entries)
 		{
