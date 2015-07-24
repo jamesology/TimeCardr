@@ -113,6 +113,39 @@ namespace TimeCardr
 			}
 		}
 
+		public static void WeeklyDetail(string outputDirectory, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
+		{
+			if (Directory.Exists(outputDirectory) == false)
+			{
+				Directory.CreateDirectory(outputDirectory);
+			}
+
+			var weekEntries =
+				entries.SelectMany(dateEntries => dateEntries.Value)
+					.Where(entry => entry.Date > DateTime.Today.AddDays(-7))
+					.OrderBy(x => x.Date)
+					.ThenBy(x => x.Project)
+					.ThenBy(x => x.Task)
+					.ToList();
+
+			var weekFileName = ("Week.Detail.txt");
+			var filePath = Path.Combine(outputDirectory, weekFileName);
+			using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+			{
+				using (var fileWriter = new StreamWriter(stream))
+				{
+					foreach (var entry in weekEntries)
+					{
+						fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task,
+							entry.Hours);
+					}
+
+					fileWriter.Close();
+				}
+				stream.Close();
+			}
+		}
+
 		private static double CalculatePercentage(Entry entry, IEnumerable<Entry> monthEntries)
 		{
 			var ratio = ((double)entry.Hours / (monthEntries.Sum(x => x.Hours)));

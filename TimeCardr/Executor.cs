@@ -25,6 +25,7 @@ namespace TimeCardr
 			Write.ToFile(config.DataFile, entries, log);
 			Write.MonthlyDetail(config.OutputDirectory, entries, log);
 			Write.MonthlySummary(config.OutputDirectory, entries, log);
+			Write.WeeklyDetail(config.OutputDirectory, entries, log);
 
 			return entries;
 		}
