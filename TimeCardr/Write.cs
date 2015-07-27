@@ -16,7 +16,7 @@ namespace TimeCardr
 
 				foreach (var entry in entries.SelectMany(dateEntries => dateEntries.Value).Where(entry => entry.Hours > 0).OrderBy(x => x.Date).ThenBy(x => x.Project).ThenBy(x => x.Task))
 				{
-					fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
+					fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
 				}
 
 				fileWriter.Close();
@@ -51,8 +51,7 @@ namespace TimeCardr
 					{
 						foreach (var entry in monthEntries)
 						{
-							fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task,
-								entry.Hours);
+							fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
 						}
 
 						fileWriter.Close();
@@ -79,7 +78,7 @@ namespace TimeCardr
 						.Aggregate(new Dictionary<string, Entry>(), (dictionary, entry) =>
 						{
 							var key = String.Format("{0}{1}", entry.Project, entry.Task);
-							var currentHours = 0;
+							var currentHours = 0.0;
 							if (dictionary.ContainsKey(key))
 							{
 								currentHours = dictionary[key].Hours;
@@ -103,7 +102,7 @@ namespace TimeCardr
 					{
 						foreach (var entry in monthEntries)
 						{
-							fileWriter.WriteLine("{0},{1},{2:d},{3},{4},{5:F2}%", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours, CalculatePercentage(entry, monthEntries));
+							fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2},{5:F2}%", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours, CalculatePercentage(entry, monthEntries));
 						}
 
 						fileWriter.Close();
@@ -136,8 +135,7 @@ namespace TimeCardr
 				{
 					foreach (var entry in weekEntries)
 					{
-						fileWriter.WriteLine("{0},{1},{2:d},{3},{4}", entry.ResourceName, entry.Project, entry.Date, entry.Task,
-							entry.Hours);
+						fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
 					}
 
 					fileWriter.Close();
@@ -148,7 +146,7 @@ namespace TimeCardr
 
 		private static double CalculatePercentage(Entry entry, IEnumerable<Entry> monthEntries)
 		{
-			var ratio = ((double)entry.Hours / (monthEntries.Sum(x => x.Hours)));
+			var ratio = (entry.Hours / (monthEntries.Sum(x => x.Hours)));
 			return ratio * 100.0;
 		}
 	}

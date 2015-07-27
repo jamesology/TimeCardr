@@ -8,6 +8,8 @@ namespace TimeCardr.Cli
 {
 	static class UserInput
 	{
+		private const double Tolerance = 0.000001;
+
 		public static IDictionary<DateTime, ICollection<Entry>> Retrieve(IDictionary<DateTime, ICollection<Entry>> entries, string resourceName, ICollection<Project> projects, ICollection<Task> tasks, string defaultDataFile, ILog log)
 		{
 			var entryDate = GetEntryDate(log);
@@ -16,18 +18,18 @@ namespace TimeCardr.Cli
 			//TODO: Offer default entry
 
 			var dayHours = GetHours(log);
-			var isDayValid = (dayHours == 0);
+			var isDayValid = (Math.Abs(dayHours) < Tolerance);
 
 			while (isDayValid == false)
 			{
 				entry = new Collection<Entry>();
-				var totalProjectHours = 0;
+				var totalProjectHours = 0.0;
 				foreach (var project in projects.Where(x => x.Active))
 				{
 					Console.WriteLine("Project: {0}", project.Name);
 					var projectEntries = GetProject(project, entryDate, resourceName, tasks, defaultDataFile, log);
 
-					var projectHours = 0;
+					var projectHours = 0.0;
 					foreach (var projectEntry in projectEntries)
 					{
 						entry.Add(projectEntry);
@@ -36,7 +38,7 @@ namespace TimeCardr.Cli
 					totalProjectHours += projectHours;
 				}
 
-				isDayValid = (dayHours == totalProjectHours);
+				isDayValid = (Math.Abs(dayHours - totalProjectHours) < Tolerance);
 
 				if (isDayValid == false)
 				{
@@ -65,9 +67,9 @@ namespace TimeCardr.Cli
 			return result;
 		}
 
-		private static int GetHours(ILog log)
+		private static double GetHours(ILog log)
 		{
-			var result = 0;
+			var result = 0.0;
 			var validHours = false;
 			while (validHours == false)
 			{
@@ -75,7 +77,7 @@ namespace TimeCardr.Cli
 				var hours = Console.ReadLine();
 				hours = (hours != null && hours.Length == 0) ? "0" : hours;
 
-				validHours = Int32.TryParse(hours, out result);
+				validHours = Double.TryParse(hours, out result);
 			}
 
 			log.DebugFormat("Hours entered: {0}", result);
@@ -89,12 +91,12 @@ namespace TimeCardr.Cli
 			if (projectEntries.Any() == false)
 			{
 				var projectHours = GetHours(log);
-				var isProjectValid = (projectHours == 0);
+				var isProjectValid = (Math.Abs(projectHours) < Tolerance);
 
 				while (isProjectValid == false)
 				{
 					projectEntries = new Collection<Entry>();
-					var totalTaskHours = 0;
+					var totalTaskHours = 0.0;
 					foreach (
 						var taskEntry in tasks.Select(task => GetTask(task, new Entry(entryDate, resourceName, project.Id, "", 0))))
 					{
@@ -102,7 +104,7 @@ namespace TimeCardr.Cli
 						totalTaskHours += taskEntry.Hours;
 					}
 
-					isProjectValid = (projectHours == totalTaskHours);
+					isProjectValid = (Math.Abs(projectHours - totalTaskHours) < Tolerance);
 
 					if (isProjectValid == false)
 					{
@@ -136,7 +138,7 @@ namespace TimeCardr.Cli
 
 		private static Entry GetTask(Task task, Entry entry)
 		{
-			var taskHours = 0;
+			var taskHours = 0.0;
 			var validTaskHours = false;
 
 			while (validTaskHours == false)
@@ -151,11 +153,11 @@ namespace TimeCardr.Cli
 				else if (String.IsNullOrWhiteSpace(taskHoursEntry))
 				{
 					validTaskHours = true;
-					taskHours = 0;
+					taskHours = 0.0;
 				}
 				else
 				{
-					validTaskHours = Int32.TryParse(taskHoursEntry, out taskHours);
+					validTaskHours = Double.TryParse(taskHoursEntry, out taskHours);
 
 				}
 			}

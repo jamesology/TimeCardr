@@ -87,7 +87,7 @@ namespace TimeCardr
 			var project = split[1];
 			var date = DateTime.Parse(split[2]);
 			var task = split[3];
-			var hours = Int32.Parse(split[4]);
+			var hours = Double.Parse(split[4]);
 			result.Add(new Entry(date, resourceName, project, task, hours));
 		}
 	}
