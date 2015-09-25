@@ -10,6 +10,12 @@ namespace TimeCardr
 	{
 		public static void ToFile(string dataFile, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
 		{
+			if (File.Exists(dataFile))
+			{
+				string copyPath = String.Format("{0}.copy", dataFile);
+				File.Copy(dataFile, copyPath, true);
+			}
+
 			using (var stream = new FileStream(dataFile, FileMode.Create, FileAccess.Write, FileShare.Read))
 			{
 				var fileWriter = new StreamWriter(stream);
