@@ -16,7 +16,8 @@ namespace TimeCardr
 			TasksFile,
 			OutputDirectory,
 			ImportDirectory,
-			DefaultDateFile
+			DefaultDateFile,
+			QuickEntry
 		}
 
 		private static readonly IDictionary<string, Property> Properties = new Dictionary<string, Property>
@@ -33,6 +34,7 @@ namespace TimeCardr
 			{"import", Property.ImportDirectory},
 			{"d", Property.DefaultDateFile},
 			{"default", Property.DefaultDateFile},
+			{"q", Property.QuickEntry}
 		};
 
 		public static Configuration Initialize(IEnumerable<string> arguments, ILog log)
@@ -62,24 +64,27 @@ namespace TimeCardr
 						if (File.Exists(pair.Value))
 						{
 							var projects = ReadProjectsFromFile(pair.Value);
-							result = new Configuration(projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile);
+							result = new Configuration(projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile, false);
 						}
 						break;
 					case Property.TasksFile:
 						if (File.Exists(pair.Value))
 						{
 							var tasks = ReadTasksFromFile(pair.Value);
-							result = new Configuration(result.Projects, tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile);
+							result = new Configuration(result.Projects, tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile, false);
 						}
 						break;
 					case Property.OutputDirectory:
-						result = new Configuration(result.Projects, result.Tasks, pair.Value, result.ImportDirectory, result.DefaultDateFile);
+						result = new Configuration(result.Projects, result.Tasks, pair.Value, result.ImportDirectory, result.DefaultDateFile, false);
 						break;
 					case Property.ImportDirectory:
-						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, pair.Value, result.DefaultDateFile);
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, pair.Value, result.DefaultDateFile, false);
 						break;
 					case Property.DefaultDateFile:
-						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, pair.Value);
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, pair.Value, false);
+						break;
+					case Property.QuickEntry:
+						result = new Configuration(result.Projects, result.Tasks, result.OutputDirectory, result.ImportDirectory, result.DefaultDateFile, true);
 						break;
 				}
 			}
@@ -88,6 +93,8 @@ namespace TimeCardr
 			log.DebugFormat("Task Count: {0}", result.Tasks.Count);
 			log.DebugFormat("Import Directory: {0}", result.ImportDirectory);
 			log.DebugFormat("Output Directory: {0}", result.OutputDirectory);
+			log.DebugFormat("Default Date File: {0}", result.DefaultDateFile);
+			log.DebugFormat("QuickEntry: {0}", result.QuickEntry);
 
 			return result;
 		}

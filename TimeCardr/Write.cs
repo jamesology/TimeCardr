@@ -139,9 +139,15 @@ namespace TimeCardr
 			{
 				using (var fileWriter = new StreamWriter(stream))
 				{
-					foreach (var entry in weekEntries)
+					var dates = weekEntries.Select(x => x.Date).Distinct().ToList();
+					foreach (var date in dates)
 					{
-						fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
+						foreach (var entry in weekEntries.Where(x => x.Date == date))
+						{
+							fileWriter.WriteLine("{0},{1},{2:d},{3},{4:F2}", entry.ResourceName, entry.Project, entry.Date, entry.Task, entry.Hours);
+						}
+
+						fileWriter.WriteLine();
 					}
 
 					fileWriter.Close();

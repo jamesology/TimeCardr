@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using log4net;
@@ -38,6 +39,11 @@ namespace TimeCardr.Cli
 				}
 
 				IDictionary<DateTime, ICollection<Entry>> userEntries = new Dictionary<DateTime, ICollection<Entry>>();
+				if (config.QuickEntry)
+				{
+					action = QuickEntry(userEntries, config.ResourceName, config.DefaultDateFile, log);
+				}
+
 				while (action != UserAction.Exit)
 				{
 					userEntries = UserInput.Retrieve(userEntries, config.ResourceName, _projects, _tasks, config.DefaultDateFile, log);
@@ -63,6 +69,18 @@ namespace TimeCardr.Cli
 			var result = (entry == "y") ? UserAction.Continue : UserAction.Exit;
 
 			return result;
+		}
+
+		private static UserAction QuickEntry(IDictionary<DateTime, ICollection<Entry>> userEntries, string resourceName, string defaultDateFile, ILog log)
+		{
+			Console.WriteLine("Quick Entry!");
+			var defaultEntries = Read.FromFile(new Dictionary<DateTime, ICollection<Entry>>(), defaultDateFile, resourceName, log);
+
+			userEntries[DateTime.Today] = defaultEntries[defaultEntries.Keys.First()]
+				.Select(x => new Entry(DateTime.Today, resourceName, _projects[0].Id, x.Task, x.Hours))
+				.ToList();
+
+			return UserAction.Exit;
 		}
 	}
 }
