@@ -75,9 +75,11 @@ namespace TimeCardr.Cli
 		{
 			Console.WriteLine("Quick Entry!");
 			var defaultEntries = Read.FromFile(new Dictionary<DateTime, ICollection<Entry>>(), defaultDateFile, resourceName, log);
+			var projectId = _projects.FirstOrDefault(x => x.Active).Id;
 
 			userEntries[DateTime.Today] = defaultEntries[defaultEntries.Keys.First()]
-				.Select(x => new Entry(DateTime.Today, resourceName, _projects[0].Id, x.Task, x.Hours))
+				.Select(x => new Entry(DateTime.Today, resourceName, projectId, x.Task, x.Hours))
+				.Where(x => x.Hours > 0)
 				.ToList();
 
 			return UserAction.Exit;
