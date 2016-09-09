@@ -156,7 +156,99 @@ namespace TimeCardr
 			}
 		}
 
-		private static double CalculatePercentage(Entry entry, IEnumerable<Entry> monthEntries)
+        public static void WeeklySummary(string outputDirectory, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
+        {
+            if (Directory.Exists(outputDirectory) == false)
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            var monthEntries =
+                entries.SelectMany(dateEntries => dateEntries.Value)
+					.Where(entry => entry.Date > DateTime.Today.AddDays(-7))
+                    .Aggregate(new Dictionary<string, Entry>(), (dictionary, entry) =>
+                    {
+                        var key = String.Format("{0}{1}", entry.Project, entry.Task);
+                        var currentHours = 0.0;
+                        if (dictionary.ContainsKey(key))
+                        {
+                            currentHours = dictionary[key].Hours;
+                        }
+
+                        dictionary[key] = new Entry(DateTime.Today, entry.ResourceName, entry.Project, entry.Task, entry.Hours + currentHours);
+
+                        return dictionary;
+                    })
+                    .Select(x => x.Value)
+                    .OrderBy(x => x.Date)
+                    .ThenBy(x => x.Project)
+                    .ThenBy(x => x.Task)
+                    .ToList();
+
+            var monthFileName = "Weekly.Summary.txt";
+            var filePath = Path.Combine(outputDirectory, monthFileName);
+            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            {
+                using (var fileWriter = new StreamWriter(stream))
+                {
+                    foreach (var entry in monthEntries)
+                    {
+                        fileWriter.WriteLine("{0},{1:d},{2},{3:F2},{4:F2}%", entry.ResourceName, entry.Date, entry.Task, entry.Hours, CalculatePercentage(entry, monthEntries));
+                    }
+
+                    fileWriter.Close();
+                }
+                stream.Close();
+            }
+        }
+
+        public static void DailySummary(string outputDirectory, IDictionary<DateTime, ICollection<Entry>> entries, ILog log)
+        {
+            if (Directory.Exists(outputDirectory) == false)
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            var monthEntries =
+                entries.SelectMany(dateEntries => dateEntries.Value)
+                    .Where(entry => entry.Date > DateTime.Today.AddDays(-7))
+                    .Aggregate(new Dictionary<string, Entry>(), (dictionary, entry) =>
+                    {
+                        var key = String.Format("{0:yyyyMMdd}", entry.Date);
+                        var currentHours = 0.0;
+                        if (dictionary.ContainsKey(key))
+                        {
+                            currentHours = dictionary[key].Hours;
+                        }
+
+                        dictionary[key] = new Entry(entry.Date, entry.ResourceName, entry.Project, entry.Task, entry.Hours + currentHours);
+
+                        return dictionary;
+                    })
+                    .Select(x => x.Value)
+                    .OrderBy(x => x.Date)
+                    .ThenBy(x => x.Project)
+                    .ThenBy(x => x.Task)
+                    .ToList();
+
+            var monthFileName = "Daily.Summary.txt";
+            var filePath = Path.Combine(outputDirectory, monthFileName);
+            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            {
+                using (var fileWriter = new StreamWriter(stream))
+                {
+                    foreach (var entry in monthEntries)
+                    {
+                        fileWriter.WriteLine("{0},{1:d},{2:F2},{3:F2}%", entry.ResourceName, entry.Date, entry.Hours, CalculatePercentage(entry, monthEntries));
+                    }
+
+                    fileWriter.Close();
+                }
+                stream.Close();
+            }
+        }
+
+        private static double CalculatePercentage(Entry entry, IEnumerable<Entry> monthEntries)
 		{
 			var ratio = (entry.Hours / (monthEntries.Sum(x => x.Hours)));
 			return ratio * 100.0;

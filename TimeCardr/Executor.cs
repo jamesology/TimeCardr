@@ -26,6 +26,8 @@ namespace TimeCardr
 			Write.MonthlyDetail(config.OutputDirectory, entries, log);
 			Write.MonthlySummary(config.OutputDirectory, entries, log);
 			Write.WeeklyDetail(config.OutputDirectory, entries, log);
+            Write.WeeklySummary(config.OutputDirectory, entries, log);
+            Write.DailySummary(config.OutputDirectory, entries, log);
 
 			return entries;
 		}
