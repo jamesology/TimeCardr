@@ -423,7 +423,7 @@ namespace TimeCardr.Tests
 				Directory.CreateDirectory(outputDirectory);
 			}
 
-			return new Configuration(projects, tasks, outputDirectory, importDirectory, string.Empty);
+			return new Configuration(projects, tasks, outputDirectory, importDirectory, string.Empty, false);
 		}
 		private static void CreateDataFile(string filePath, IEnumerable<Entry> entries)
 		{
